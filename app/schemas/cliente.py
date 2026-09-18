@@ -1,16 +1,16 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class ClienteCreate(BaseModel):
     nome: str = Field(max_length=100)
-    email: str = Field(max_length=255)
+    email: EmailStr = Field(max_length=255)
     telefone: str = Field(max_length=20)
 
 
 class ClienteUpdate(BaseModel):
     nome: str = Field(max_length=100)
-    email: str = Field(max_length=255)
+    email: EmailStr = Field(max_length=255)
     telefone: str = Field(max_length=20)
 
 
