@@ -1,9 +1,9 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.cliente import Cliente
-from app.schemas.cliente import ClienteCreate, ClienteUpdate
+from app.schemas.cliente import ClienteCreate, ClienteUpdate, ClienteResponse
 
 
 app = FastAPI()
@@ -14,13 +14,13 @@ def root():
     return {"message": "API de Clientes online"}
 
 
-@app.get("/clientes")
+@app.get("/clientes", response_model=list[ClienteResponse])
 def listar_clientes(db: Session = Depends(get_db)):
     clientes = db.query(Cliente).all()
     return clientes
 
 
-@app.get("/clientes/{id}")
+@app.get("/clientes/{id}", response_model=ClienteResponse)
 def buscar_cliente(id: int, db: Session = Depends(get_db)):
     cliente = db.query(Cliente).filter(Cliente.id == id).first()
 
@@ -33,7 +33,7 @@ def buscar_cliente(id: int, db: Session = Depends(get_db)):
     return cliente
 
 
-@app.put("/cliente/{id}")
+@app.put("/cliente/{id}", response_model=ClienteResponse)
 def atualizar_cliente(id: int, cliente: ClienteUpdate, db: Session = Depends(get_db)):
     cliente_db = db.query(Cliente).filter(Cliente.id == id).first()
 
@@ -69,7 +69,7 @@ def deletar_cliente(id: int, db: Session = Depends(get_db)):
     return {"message": "Cliente deletado com sucesso"}
 
 
-@app.post("/clientes")
+@app.post("/clientes", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
 def criar_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
     novo_cliente = Cliente(
         nome=cliente.nome,
