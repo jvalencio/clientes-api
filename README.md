@@ -20,7 +20,14 @@ A API permite realizar operações CRUD de clientes:
 - `PUT /clientes/{id}` — atualizar cliente
 - `DELETE /clientes/{id}` — deletar cliente
 
-A API também possui tratamento para clientes não encontrados, retornando `404 Not Found`.
+A API também possui:
+
+validação dos dados recebidos;
+validação do formato dos emails;
+limite de caracteres para os campos;
+tratamento de clientes não encontrados, retornando 404 Not Found;
+tratamento de emails duplicados, retornando 409 Conflict;
+formatação da data de criação dos clientes nas respostas da API.
 
 ## Banco de Dados
 

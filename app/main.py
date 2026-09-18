@@ -34,7 +34,32 @@ def buscar_cliente(id: int, db: Session = Depends(get_db)):
     return cliente
 
 
-@app.put("/cliente/{id}", response_model=ClienteResponse)
+@app.post("/clientes", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
+def criar_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
+    novo_cliente = Cliente(
+        nome=cliente.nome,
+        email=cliente.email,
+        telefone=cliente.telefone
+    )
+
+    db.add(novo_cliente)
+    
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Email já cadastrado"
+        )
+
+    db.refresh(novo_cliente)
+
+    return novo_cliente
+
+
+@app.put("/clientes/{id}", response_model=ClienteResponse)
 def atualizar_cliente(id: int, cliente: ClienteUpdate, db: Session = Depends(get_db)):
     cliente_db = db.query(Cliente).filter(Cliente.id == id).first()
 
@@ -77,28 +102,3 @@ def deletar_cliente(id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Cliente deletado com sucesso"}
-
-
-@app.post("/clientes", response_model=ClienteResponse, status_code=status.HTTP_201_CREATED)
-def criar_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
-    novo_cliente = Cliente(
-        nome=cliente.nome,
-        email=cliente.email,
-        telefone=cliente.telefone
-    )
-
-    db.add(novo_cliente)
-    
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=409,
-            detail="Email já cadastrado"
-        )
-
-    db.refresh(novo_cliente)
-
-    return novo_cliente
