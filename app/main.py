@@ -1,9 +1,9 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.cliente import Cliente
-from app.schemas.cliente import ClienteCreate
+from app.schemas.cliente import ClienteCreate, ClienteUpdate
 
 
 app = FastAPI()
@@ -23,7 +23,50 @@ def listar_clientes(db: Session = Depends(get_db)):
 @app.get("/clientes/{id}")
 def buscar_cliente(id: int, db: Session = Depends(get_db)):
     cliente = db.query(Cliente).filter(Cliente.id == id).first()
+
+    if cliente is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Cliente não encontrado"
+        )
+
     return cliente
+
+
+@app.put("/cliente/{id}")
+def atualizar_cliente(id: int, cliente: ClienteUpdate, db: Session = Depends(get_db)):
+    cliente_db = db.query(Cliente).filter(Cliente.id == id).first()
+
+    if cliente_db is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Cliente não encontrado"
+        )
+
+    cliente_db.nome = cliente.nome
+    cliente_db.email = cliente.email
+    cliente_db.telefone = cliente.telefone
+
+    db.commit()
+    db.refresh(cliente_db)
+
+    return cliente_db
+
+
+@app.delete("/clientes/{id}")
+def deletar_cliente(id: int, db: Session = Depends(get_db)):
+    cliente_db = db.query(Cliente).filter(Cliente.id == id).first()
+
+    if cliente_db is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Cliente não encontrado"
+        )
+    
+    db.delete(cliente_db)
+    db.commit()
+
+    return {"message": "Cliente deletado com sucesso"}
 
 
 @app.post("/clientes")
