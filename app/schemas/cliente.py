@@ -3,13 +3,13 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class ClienteCreate(BaseModel):
-    nome: str = Field(max_length=100)
+    nome: str = Field(min_length=1, max_length=100)
     email: EmailStr = Field(max_length=255)
     telefone: str = Field(max_length=20)
 
 
 class ClienteUpdate(BaseModel):
-    nome: str = Field(max_length=100)
+    nome: str = Field(min_length=1, max_length=100)
     email: EmailStr = Field(max_length=255)
     telefone: str = Field(max_length=20)
 
