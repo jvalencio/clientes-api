@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -47,7 +48,16 @@ def atualizar_cliente(id: int, cliente: ClienteUpdate, db: Session = Depends(get
     cliente_db.email = cliente.email
     cliente_db.telefone = cliente.telefone
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Email já cadastrado"
+        )
+    
     db.refresh(cliente_db)
 
     return cliente_db
@@ -78,7 +88,17 @@ def criar_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
     )
 
     db.add(novo_cliente)
-    db.commit()
+    
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Email já cadastrado"
+        )
+
     db.refresh(novo_cliente)
 
     return novo_cliente
